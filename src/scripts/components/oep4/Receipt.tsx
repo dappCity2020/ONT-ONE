@@ -17,7 +17,7 @@ const initialState = {
   isDeployed: false,
 };
 
-export default class NewOep4TokenReceipt extends React.Component<Props, State> {
+export default class Receipt extends React.Component<Props, State> {
 
   constructor(props, state) {
     super(props, state);

@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
-import { init, compile, deploy } from '../actions/dapi';
+import { deploy } from '../../actions/dapi';
 
 interface Props {
   dispatch: any;
@@ -17,7 +17,7 @@ const initialState = {
   networkIndex: 0,
   error: null,
 };
-export default class NewOep4TokenDeploy extends React.Component<Props, State> {
+export default class Deploy extends React.Component<Props, State> {
 
   private nameEle;
   private versionEle;
@@ -42,6 +42,8 @@ export default class NewOep4TokenDeploy extends React.Component<Props, State> {
       decimals,
       totalSupply,
       owner,
+      initialAmount,
+      tokensPerOnt,
     } = compileDetails;
 
     return (
@@ -55,6 +57,8 @@ export default class NewOep4TokenDeploy extends React.Component<Props, State> {
             <div className='row'>{`Token decimals: ${decimals}`}</div>
             <div className='row'>{`Token total supply: ${totalSupply}`}</div>
             <div className='row'>{`Owner address: ${owner}`}</div>
+            <div className='row'>{`Tokens sent to token owner on init: ${initialAmount}`}</div>
+            <div className='row'>{`Token exchange rate (tokens per ONT): ${tokensPerOnt}`}</div>
           </div>
 
           <div>

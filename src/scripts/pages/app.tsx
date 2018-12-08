@@ -9,6 +9,7 @@ class App extends React.Component<any, any> {
     return (
       <div className='index'>
         <button onClick={() => dispatch(push('/oep4'))}>OEP4</button>
+        <button onClick={() => dispatch(push('/oep4crowdsale'))}>OEP4 w/ Crowdsale</button>
       </div>
     );
   }

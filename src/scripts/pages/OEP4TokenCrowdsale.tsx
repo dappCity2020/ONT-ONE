@@ -1,9 +1,9 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
 import { init, compile, deploy } from '../actions/dapi';
-import NewOep4TokenCompile from '../components/NewOep4TokenCompile';
-import NewOep4TokenDeploy from '../components/NewOep4TokenDeploy';
-import NewOep4TokenReceipt from '../components/NewOep4TokenReceipt';
+import Compile from '../components/oep4crowdsale/Compile';
+import Deploy from '../components/oep4crowdsale/Deploy';
+import Receipt from '../components/oep4crowdsale/Receipt';
 
 interface Props {
   dispatch: any;
@@ -24,7 +24,7 @@ const initialState = {
   error: null,
 };
 
-class NewOep4Token extends React.Component<Props, State> {
+class OEP4TokenCrowdsale extends React.Component<Props, State> {
 
   constructor(props, state) {
     super(props, state);
@@ -55,7 +55,7 @@ class NewOep4Token extends React.Component<Props, State> {
 
     if (deployDetails) {
       return (
-        <NewOep4TokenReceipt
+        <Receipt
           dispatch={dispatch}
           compileDetails={pendingCompileDetails}
           deployDetails={deployDetails}
@@ -65,7 +65,7 @@ class NewOep4Token extends React.Component<Props, State> {
 
     if (compileDetails) {
       return (
-        <NewOep4TokenDeploy
+        <Deploy
           dispatch={dispatch}
           compileDetails={pendingCompileDetails}
           networks={networks}
@@ -74,7 +74,7 @@ class NewOep4Token extends React.Component<Props, State> {
     }
 
     return (
-      <NewOep4TokenCompile
+      <Compile
         dispatch={dispatch}
       />
     );
@@ -95,4 +95,4 @@ function mapStateToProps(state) {
   };
 }
 
-export default connect(mapStateToProps)(NewOep4Token);
+export default connect(mapStateToProps)(OEP4TokenCrowdsale);

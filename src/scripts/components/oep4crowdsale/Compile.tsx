@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
-import { init, compile, deploy } from '../actions/dapi';
+import { compile } from '../../actions/oep4Crowdsale';
 
 interface Props {
   dispatch: any;
@@ -14,13 +14,15 @@ const initialState = {
   error: null,
 };
 
-export default class NewOep4TokenCompile extends React.Component<Props, State> {
+export default class Compile extends React.Component<Props, State> {
 
   private nameEle;
   private symbolEle;
   private decimalsEle;
   private supplyEle;
   private ownerAddrEle;
+  private initialAmountEle;
+  private tokensPerOntEle;
 
   constructor(props, state) {
     super(props, state);
@@ -32,7 +34,7 @@ export default class NewOep4TokenCompile extends React.Component<Props, State> {
 
     return (
       <div className='oep4-token-details-form'>
-        <h1>{'New Token Details'}</h1>
+        <h1>{'New Token Details w/ Crowdsale'}</h1>
         <div className='counterButtons'>
 
           <div>
@@ -67,6 +69,7 @@ export default class NewOep4TokenCompile extends React.Component<Props, State> {
             <div>{'Token total supply:'}</div>
             <input
               ref={ref => this.supplyEle = ref}
+              type='number'
               placeholder='eg. 1000000000'
               defaultValue='1000000000'
             />
@@ -76,8 +79,28 @@ export default class NewOep4TokenCompile extends React.Component<Props, State> {
             <div>{'Owner address:'}</div>
             <input
               ref={ref => this.ownerAddrEle = ref}
-              placeholder='AUr5QUfeBADq6BMY6Tp5yuMsUNGpsD7nLZ'
+              placeholder='eg. AUr5QUfeBADq6BMY6Tp5yuMsUNGpsD7nLZ'
               defaultValue='AUr5QUfeBADq6BMY6Tp5yuMsUNGpsD7nLZ'
+            />
+          </div>
+
+          <div>
+            <div>{'Tokens sent to token owner on init:'}</div>
+            <input
+              ref={ref => this.initialAmountEle = ref}
+              type='number'
+              placeholder='eg. 200000000'
+              defaultValue='200000000'
+            />
+          </div>
+
+          <div>
+            <div>{'Token exchange rate (tokens per ONT):'}</div>
+            <input
+              ref={ref => this.tokensPerOntEle = ref}
+              type='number'
+              placeholder='eg. 100'
+              defaultValue='100'
             />
           </div>
 
@@ -134,12 +157,34 @@ export default class NewOep4TokenCompile extends React.Component<Props, State> {
       return;
     }
 
+    if (!this.initialAmountEle.value) {
+      this.setState({error: 'Initial amount is blank!'});
+      return;
+    }
+
+    if (isNaN(Number(this.initialAmountEle.value))) {
+      this.setState({error: 'Initial amount is not a valid number!'});
+      return;
+    }
+
+    if (!this.tokensPerOntEle.value) {
+      this.setState({error: 'Exchange rate is blank!'});
+      return;
+    }
+
+    if (isNaN(Number(this.tokensPerOntEle.value))) {
+      this.setState({error: 'Exchange rate is not a valid number!'});
+      return;
+    }
+
     dispatch(compile({
       tokenName: this.nameEle.value,
       symbol: this.symbolEle.value,
       decimals: this.decimalsEle.value,
       totalSupply: this.supplyEle.value,
       owner: this.ownerAddrEle.value,
+      initialAmount: this.initialAmountEle.value,
+      tokensPerOnt: this.tokensPerOntEle.value,
     }));
   }
 

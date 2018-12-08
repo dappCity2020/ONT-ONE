@@ -1,21 +1,25 @@
-export function createOep4({
+export function createOep4Crowdsale({
   tokenName,
   symbol,
   decimals,
   totalSupply,
   owner,
+  initialAmount,
+  tokensPerOnt,
 }) {
 return `"""
-Custom OEP-4 Token ${tokenName}
+Custom OEP-4 Token w/ crowdsale ${tokenName}
 """
 from boa.interop.System.Storage import GetContext, Get, Put, Delete
 from boa.interop.System.Runtime import Notify, CheckWitness
 from boa.interop.System.Action import RegisterAction
 from boa.builtins import concat, ToScriptHash
-# from boa.interop.Ontology.Runtime import AddressToBase58, Base58ToAddress
+from boa.interop.Ontology.Native import Invoke
+from boa.builtins import state
 
 TransferEvent = RegisterAction("transfer", "from", "to", "amount")
 ApprovalEvent = RegisterAction("approval", "owner", "spender", "amount")
+OnKYCRegister = RegisterAction("kyc_registration", "address")
 
 ctx = GetContext()
 
@@ -25,18 +29,20 @@ DECIMALS = ${decimals}
 FACTOR = ${Math.pow(10, decimals)}
 OWNER = ToScriptHash("${owner}")
 TOTAL_AMOUNT = ${totalSupply}
-BALANCE_PREFIX = bytearray(b'\x01')
-APPROVE_PREFIX = b'\x02'
+TOKEN_INITIAL_AMOUNT = ${initialAmount}
+TOKENS_PER_ONT = ${tokensPerOnt}
+BALANCE_PREFIX = bytearray(b'')
+APPROVE_PREFIX = b''
 SUPPLY_KEY = 'TotalSupply'
-
+KYC_KEY = 'kyc_ok'
+TOKEN_CIRC_KEY = 'in_circulation'
+INIT_KEY = 'initialized'
+OntContract = ToScriptHash("AFmseVrdL9f9oyCzZefL9tG6UbvhUMqNMV")
+CROWDSALE_STARTED_KEY = 'sale_started'
+CROWDSALE_ENDED_KEY = 'sale_ended'
 
 def Main(operation, args):
-    """
-    :param operation:
-    :param args:
-    :return:
-    """
-    # 'init' has to be invokded first after deploying the contract to store the necessary and important info in the blockchain
+
     if operation == 'init':
         return init()
     if operation == 'name':
@@ -83,30 +89,50 @@ def Main(operation, args):
         owner = args[0]
         spender = args[1]
         return allowance(owner,spender)
+    if operation == 'circulation':
+        return circulation()
+    if operation == 'startCrowdSale':
+        return startCrowdSale()
+    if operation == 'endCrowdsale':
+        return endCrowdSale()
+    if operation == 'crowdsaleStatus':
+        return crowdsaleStatus()
+    if operation == 'mintTokens':
+        purchaser = args[0]
+        ontAmount = args[1]
+        return mintTokens(purchaser, ontAmount)
+    if operation == 'crowdsaleRegister':
+        return crowdsaleRegister(args)
+    if operation == 'crowdsaleRegistrationStatus':
+        acct = args[0]
+        return crowdsaleRegistrationStatus(acct)
+    if operation == 'crowdsaleAvailable':
+        return crowdsaleAvailable()
+
     return False
 
 def init():
-    """
-    initialize the contract, put some important info into the storage in the blockchain
-    :return:
-    """
-    if len(OWNER) != 20:
-        Notify(["Owner illegal!"])
+
+    if not CheckWitness(OWNER):
+        print("Must be owner to init")
         return False
-    if Get(ctx,SUPPLY_KEY):
+
+    if Get(ctx,INIT_KEY):
         Notify("Already initialized!")
         return False
-    else:
-        total = TOTAL_AMOUNT * FACTOR
-        Put(ctx,SUPPLY_KEY,total)
-        Put(ctx,concat(BALANCE_PREFIX,OWNER),total)
 
-        # Notify(["transfer", "", Base58ToAddress(OWNER), total])
-        # ownerBase58 = AddressToBase58(OWNER)
-        TransferEvent("", OWNER, total)
+    Put(ctx, INIT_KEY, 1)
 
-        return True
+    total = TOKEN_INITIAL_AMOUNT * FACTOR
 
+    key = concat(BALANCE_PREFIX,OWNER)
+
+    Put(ctx, key, total)
+
+    TransferEvent("", OWNER, total)
+    add_to_circulation(total)
+
+    return True
 
 def name():
     """
@@ -133,7 +159,10 @@ def totalSupply():
     """
     :return: the total supply of the token
     """
-    return Get(ctx, SUPPLY_KEY)
+    return TOTAL_AMOUNT * FACTOR
+
+def circulation():
+    return Get(ctx, TOKEN_CIRC_KEY)
 
 
 def balanceOf(account):
@@ -147,13 +176,7 @@ def balanceOf(account):
 
 
 def transfer(from_acct,to_acct,amount):
-    """
-    Transfer amount of tokens from from_acct to to_acct
-    :param from_acct: the account from which the amount of tokens will be transferred
-    :param to_acct: the account to which the amount of tokens will be transferred
-    :param amount: the amount of the tokens to be transferred, >= 0
-    :return: True means success, False or raising exception means failure.
-    """
+
     if len(to_acct) != 20 or len(from_acct) != 20:
         raise Exception("address length error")
     if CheckWitness(from_acct) == False or amount < 0:
@@ -172,18 +195,13 @@ def transfer(from_acct,to_acct,amount):
     toBalance = Get(ctx,toKey)
     Put(ctx,toKey,toBalance + amount)
 
-    # Notify(["transfer", AddressToBase58(from_acct), AddressToBase58(to_acct), amount])
-    # TransferEvent(AddressToBase58(from_acct), AddressToBase58(to_acct), amount)
     TransferEvent(from_acct, to_acct, amount)
 
     return True
 
 
 def transferMulti(args):
-    """
-    :param args: the parameter is an array, containing element like [from, to, amount]
-    :return: True means success, False or raising exception means failure.
-    """
+
     for p in args:
         if len(p) != 3:
             # return False is wrong
@@ -195,14 +213,7 @@ def transferMulti(args):
 
 
 def approve(owner,spender,amount):
-    """
-    owner allow spender to spend amount of token from owner account
-    Note here, the amount should be less than the balance of owner right now.
-    :param owner:
-    :param spender:
-    :param amount: amount>=0
-    :return: True means success, False or raising exception means failure.
-    """
+
     if len(spender) != 20 or len(owner) != 20:
         raise Exception("address length error")
     if CheckWitness(owner) == False:
@@ -213,23 +224,13 @@ def approve(owner,spender,amount):
     key = concat(concat(APPROVE_PREFIX,owner),spender)
     Put(ctx, key, amount)
 
-    # Notify(["approval", AddressToBase58(owner), AddressToBase58(spender), amount])
-    # ApprovalEvent(AddressToBase58(owner), AddressToBase58(spender), amount)
     ApprovalEvent(owner, spender, amount)
 
     return True
 
 
 def transferFrom(spender,from_acct,to_acct,amount):
-    """
-    spender spends amount of tokens on the behalf of from_acct, spender makes a transaction of amount of tokens
-    from from_acct to to_acct
-    :param spender:
-    :param from_acct:
-    :param to_acct:
-    :param amount:
-    :return:
-    """
+
     if len(spender) != 20 or len(from_acct) != 20 or len(to_acct) != 20:
         raise Exception("address length error")
     if CheckWitness(spender) == False:
@@ -256,21 +257,134 @@ def transferFrom(spender,from_acct,to_acct,amount):
     toBalance = Get(ctx, toKey)
     Put(ctx, toKey, toBalance + amount)
 
-    # Notify(["transfer", AddressToBase58(from_acct), AddressToBase58(to_acct), amount])
-    # TransferEvent(AddressToBase58(from_acct), AddressToBase58(to_acct), amount)
     TransferEvent(from_acct, to_acct, amount)
 
     return True
 
 
 def allowance(owner,spender):
-    """
-    check how many token the spender is allowed to spend from owner account
-    :param owner: token owner
-    :param spender:  token spender
-    :return: the allowed amount of tokens
-    """
+
     key = concat(concat(APPROVE_PREFIX,owner),spender)
     return Get(ctx,key)
+
+def add_to_circulation(amount):
+
+    current_supply = Get(ctx, TOKEN_CIRC_KEY)
+
+    Put(ctx, TOKEN_CIRC_KEY, current_supply + amount)
+    return True
+
+def startCrowdSale():
+
+    if not CheckWitness(OWNER):
+        print("Must be owner to start crowdsale")
+        return False
+
+    if Get(ctx,CROWDSALE_STARTED_KEY):
+        Notify("Already started!")
+        return False
+
+    Put(ctx, CROWDSALE_STARTED_KEY, 1)
+
+    return True
+
+def endCrowdSale():
+
+    if not CheckWitness(OWNER):
+        print("Must be owner to end crowdsale")
+        return False
+
+    if Get(ctx,CROWDSALE_STARTED_KEY):
+        Notify("Already ended!")
+        return False
+
+    Put(ctx, CROWDSALE_ENDED_KEY, 1)
+
+    return True
+
+def crowdsaleStatus():
+
+    if Get(ctx,CROWDSALE_ENDED_KEY):
+        return 2
+
+    if Get(ctx,CROWDSALE_STARTED_KEY):
+        return 1
+
+    return 0
+
+def crowdsaleRegister(args):
+
+    ok_count = 0
+
+    if CheckWitness(OWNER):
+
+        for address in args:
+
+            if len(address) == 20:
+
+                kyc_storage_key = concat(KYC_KEY, address)
+                Put(ctx, kyc_storage_key, 1)
+
+                OnKYCRegister(address)
+                ok_count += 1
+
+    return ok_count
+
+def crowdsaleRegistrationStatus(acct):
+
+    kyc_storage_key = concat(KYC_KEY, acct)
+
+    return Get(ctx, kyc_storage_key)
+
+def crowdsaleAvailable():
+
+    in_circ = Get(ctx, TOKEN_CIRC_KEY)
+
+    total_supply = TOTAL_AMOUNT * FACTOR
+
+    available = total_supply - in_circ
+
+    return available
+
+def mintTokens(purchaser,ontAmount):
+
+    if not (Get(ctx,INIT_KEY)):
+        Notify("Contract not yet initialized!")
+        return False
+
+    if not Get(ctx,CROWDSALE_STARTED_KEY):
+        Notify("Crowd sale not yet started!")
+        return False
+
+    if Get(ctx,CROWDSALE_ENDED_KEY):
+        Notify("Crowd sale ended!")
+        return False
+
+    if not crowdsaleRegistrationStatus(purchaser):
+        Notify("Address not registered for crowdsale!")
+        return False
+
+    currentSupply = circulation()
+    purchaseAmount = TOKENS_PER_ONT * ontAmount * FACTOR
+    newSupply = purchaseAmount + currentSupply
+
+    if (newSupply > totalSupply()):
+        raise Exception("Max supply reached!")
+
+    purchaserKey = concat(BALANCE_PREFIX,purchaser)
+    purchaserBalance = Get(ctx,purchaserKey)
+
+    param = state(purchaser, OWNER, ontAmount)
+    res = Invoke(0, OntContract, "transfer", [param])
+
+    if res != b'\x01':
+        raise Exception("transfer ont error.")
+
+    Put(ctx, purchaserKey, purchaserBalance + purchaseAmount)
+    add_to_circulation(purchaseAmount)
+
+    TransferEvent("", purchaser, purchaseAmount)
+
+    return True
 `;
 }

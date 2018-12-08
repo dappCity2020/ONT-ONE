@@ -7,7 +7,6 @@ import {
 } from '../constants/actions';
 import o3dapi from 'o3-dapi-core';
 import o3dapiOnt from 'o3-dapi-ont';
-import { createOep4Sc } from '../utils/oep4';
 import $ from 'jquery';
 import { Crypto } from 'ontology-ts-sdk';
 
@@ -26,33 +25,8 @@ export function init() {
   };
 }
 
-export function compile({
-  tokenName,
-  symbol,
-  decimals,
-  totalSupply,
-  owner,
-}) {
+export function compile(code) {
   return dispatch => {
-    dispatch({
-      type: UPDATE_PENDING_CONTRACT_DETAILS,
-      data: {
-        tokenName,
-        symbol,
-        decimals,
-        totalSupply,
-        owner,
-      },
-    });
-
-    const code = createOep4Sc({
-      tokenName,
-      symbol,
-      decimals,
-      totalSupply,
-      owner,
-    });
-
     const url = 'https://smartxcompiler.ont.io/api/beta/python/compile';
 
     const payload = {
@@ -135,7 +109,7 @@ export function deploy({
       description,
       code: avm,
       network,
-      gasLimit: 20400000,
+      gasLimit: 21000000,
       gasPrice: 500,
     })
     .then(res => {

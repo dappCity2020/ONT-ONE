@@ -7,7 +7,7 @@
     "curly": true,
     "eofline": true,
     "indent": [true, "spaces"],
-    "interface-name": [true, "always-prefix"],
+    "interface-name": [false, "always-prefix"],
     "label-position": true,
     "member-ordering": [true,
         "public-before-private",

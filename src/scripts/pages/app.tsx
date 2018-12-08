@@ -4,22 +4,11 @@ import { push } from 'react-router-redux';
 
 class App extends React.Component<any, any> {
 
-  componentWillMount() {
-    this.goToCounterPage = this.goToCounterPage.bind(this);
-    this.goToChatroom = this.goToChatroom.bind(this);
-  }
-
-  goToCounterPage() {
-    this.props.dispatch(push('/counter'));
-  }
-  goToChatroom() {
-    this.props.dispatch(push('/chat'));
-  }
   render() {
+    const { dispatch } = this.props;
     return (
       <div className='index'>
-        <button onClick={this.goToCounterPage}>Counter Page</button>
-        <button onClick={this.goToChatroom}>Chatroom</button>
+        <button onClick={() => dispatch(push('/oep4'))}>OEP4</button>
       </div>
     );
   }

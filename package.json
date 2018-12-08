@@ -46,6 +46,10 @@
     "webpack-hot-middleware": "^2.20.0"
   },
   "dependencies": {
+    "jquery": "^3.3.1",
+    "o3-dapi-core": "^0.0.8",
+    "o3-dapi-ont": "^0.0.6",
+    "ontology-ts-sdk": "^1.0.9",
     "react": "^16.0.0",
     "react-dom": "^16.0.0",
     "react-redux": "^4.4.8",

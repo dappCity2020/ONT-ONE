@@ -48,7 +48,7 @@ module.exports = (env) => {
     },
     devServer: {
       contentBase: path.join(__dirname, 'build'),
-      port: 9000,
+      port: 9001,
       compress: false,
       https: false,
       open: false,

@@ -1,12 +1,10 @@
 import { combineReducers } from 'redux';
 import { routerReducer } from 'react-router-redux';
-import counter from './components/counter';
-import chatRoom from './components/chatRoom';
+import dapi from './components/dapi';
 
 const rootReducer = combineReducers({
   routing: routerReducer,
-  counter,
-  chatRoom,
+  dapi,
 });
 
 export default rootReducer;

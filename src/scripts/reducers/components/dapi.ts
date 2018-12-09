@@ -4,6 +4,8 @@ import {
   UPDATE_COMPILED_CONTRACT,
   UPDATE_PENDING_CONTRACT_DEPLOY,
   UPDATE_DEPLOYED_CONTRACT,
+  DISCONNECT,
+  RESET,
 } from '../../constants/actions';
 
 const initialState = {
@@ -16,6 +18,12 @@ const initialState = {
 
 export default function dapi(state = initialState, action) {
   switch (action.type) {
+    case RESET:
+    case DISCONNECT:
+      return {
+        ...initialState,
+        networks: state.networks,
+      };
     case UPDATE_NETWORKS:
       return {
         ...state,

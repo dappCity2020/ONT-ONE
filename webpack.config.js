@@ -39,7 +39,7 @@ module.exports = (env) => {
 
   return {
     resolve: {
-      extensions: ['.ts', '.tsx', '.js' , '.scss'],
+      extensions: ['.ts', '.tsx', '.js' , '.scss', '.png'],
     },
     entry: ['./src/index'],
     output: {
@@ -72,6 +72,16 @@ module.exports = (env) => {
         {
           test: /\.scss$/,
           use: ['style-loader', 'css-loader','sass-loader'],
+        },
+        {
+          test: /\.svg$/,
+          use: {
+            loader: 'svg-url-loader',
+            options: {
+              noquotes: false,
+              limit: 1000000000
+            }
+          }
         },
         {
           test: /\.(jpe?g|png|woff|woff2|ttf|wav|svg)$/,

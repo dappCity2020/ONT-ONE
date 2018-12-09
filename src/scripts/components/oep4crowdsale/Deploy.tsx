@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
 import { deploy } from '../../actions/dapi';
+import Loading from '../Loading';
 
 interface Props {
   dispatch: any;
@@ -11,12 +12,15 @@ interface Props {
 interface State {
   networkIndex: number;
   error: string;
+  isLoading: boolean;
 }
 
 const initialState = {
   networkIndex: 0,
   error: null,
+  isLoading: false,
 };
+
 export default class Deploy extends React.Component<Props, State> {
 
   private nameEle;
@@ -29,13 +33,13 @@ export default class Deploy extends React.Component<Props, State> {
     super(props, state);
     this.state = {
       ...initialState,
-      networkIndex: props.networks.length || initialState.networkIndex,
+      networkIndex: (props.networks.length - 1) || initialState.networkIndex,
     };
   }
 
   render() {
     const { networks, compileDetails } = this.props;
-    const { networkIndex, error } = this.state;
+    const { networkIndex, error, isLoading } = this.state;
     const {
       tokenName,
       symbol,
@@ -61,8 +65,8 @@ export default class Deploy extends React.Component<Props, State> {
             <div className='row'>{`Token exchange rate (tokens per ONT): ${tokensPerOnt}`}</div>
           </div>
 
-          <div>
-            <div>{'Contract name:'}</div>
+          <div className='row'>
+            <div className='description'>{'Contract name:'}</div>
             <input
               ref={ref => this.nameEle = ref}
               placeholder='eg. Sausage Coin Contract'
@@ -70,8 +74,8 @@ export default class Deploy extends React.Component<Props, State> {
             />
           </div>
 
-          <div>
-            <div>{'version:'}</div>
+          <div className='row'>
+            <div className='description'>{'version:'}</div>
             <input
               ref={ref => this.versionEle = ref}
               placeholder='eg. v0.0.1'
@@ -79,8 +83,8 @@ export default class Deploy extends React.Component<Props, State> {
             />
           </div>
 
-          <div>
-            <div>{'author:'}</div>
+          <div className='row'>
+            <div className='description'>{'author:'}</div>
             <input
               ref={ref => this.authorEle = ref}
               placeholder='eg. John Smith'
@@ -88,8 +92,8 @@ export default class Deploy extends React.Component<Props, State> {
             />
           </div>
 
-          <div>
-            <div>{'email:'}</div>
+          <div className='row'>
+            <div className='description'>{'email:'}</div>
             <input
               ref={ref => this.emailEle = ref}
               placeholder='eg. johnsmith@gmail.com'
@@ -97,8 +101,8 @@ export default class Deploy extends React.Component<Props, State> {
             />
           </div>
 
-          <div>
-            <div>{'description:'}</div>
+          <div className='row'>
+            <div className='description'>{'description:'}</div>
             <input
               ref={ref => this.descriptionEle = ref}
               placeholder='eg. A token contract for Sausage Chain project.'
@@ -124,11 +128,16 @@ export default class Deploy extends React.Component<Props, State> {
             <div className='error' >{error}</div>
           ) : ''}
 
-          <button
-            onClick={() => this.handleSubmit()}
-          >
-            {'Deploy'}
-          </button>
+          {isLoading ? (
+            <Loading />
+          ) : (
+            <div
+              className='submit-button'
+              onClick={() => this.handleSubmit()}
+            >
+              {'Deploy'}
+            </div>
+          )}
 
         </div>
       </div>
@@ -164,6 +173,7 @@ export default class Deploy extends React.Component<Props, State> {
       return;
     }
 
+    this.setState({isLoading: true});
     dispatch(deploy({
       contractName: this.nameEle.value,
       version: this.versionEle.value,

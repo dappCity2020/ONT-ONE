@@ -32,13 +32,11 @@ class OEP4TokenCrowdsale extends React.Component<Props, State> {
       ...initialState,
       networkIndex: props.networks.length || initialState.networkIndex,
     };
-
-    props.dispatch(init());
   }
 
   render() {
     return (
-      <div className='oep4-token'>
+      <div className='oep4-token content-card'>
         {this.renderContent()}
       </div>
     );

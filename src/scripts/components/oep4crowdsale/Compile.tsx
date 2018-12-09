@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
 import { compile } from '../../actions/oep4Crowdsale';
+import Loading from '../Loading';
 
 interface Props {
   dispatch: any;
@@ -8,10 +9,12 @@ interface Props {
 
 interface State {
   error: string;
+  isLoading: boolean;
 }
 
 const initialState = {
   error: null,
+  isLoading: false,
 };
 
 export default class Compile extends React.Component<Props, State> {
@@ -30,15 +33,15 @@ export default class Compile extends React.Component<Props, State> {
   }
 
   render() {
-    const { error } = this.state;
+    const { error, isLoading } = this.state;
 
     return (
       <div className='oep4-token-details-form'>
         <h1>{'New Token Details w/ Crowdsale'}</h1>
         <div className='counterButtons'>
 
-          <div>
-            <div>{'Token name:'}</div>
+          <div className='row'>
+            <div className='description'>{'Token name:'}</div>
             <input
               ref={ref => this.nameEle = ref}
               placeholder='eg. Sausage Coin'
@@ -46,8 +49,8 @@ export default class Compile extends React.Component<Props, State> {
             />
           </div>
 
-          <div>
-            <div>{'Token symbol:'}</div>
+          <div className='row'>
+            <div className='description'>{'Token symbol:'}</div>
             <input
               ref={ref => this.symbolEle = ref}
               placeholder='eg. SGC'
@@ -55,8 +58,8 @@ export default class Compile extends React.Component<Props, State> {
             />
           </div>
 
-          <div>
-            <div>{'Token decimals:'}</div>
+          <div className='row'>
+            <div className='description'>{'Token decimals:'}</div>
             <input
               ref={ref => this.decimalsEle = ref}
               type='number'
@@ -65,8 +68,8 @@ export default class Compile extends React.Component<Props, State> {
             />
           </div>
 
-          <div>
-            <div>{'Token total supply:'}</div>
+          <div className='row'>
+            <div className='description'>{'Token total supply:'}</div>
             <input
               ref={ref => this.supplyEle = ref}
               type='number'
@@ -75,8 +78,8 @@ export default class Compile extends React.Component<Props, State> {
             />
           </div>
 
-          <div>
-            <div>{'Owner address:'}</div>
+          <div className='row'>
+            <div className='description'>{'Owner address:'}</div>
             <input
               ref={ref => this.ownerAddrEle = ref}
               placeholder='eg. AUr5QUfeBADq6BMY6Tp5yuMsUNGpsD7nLZ'
@@ -84,8 +87,8 @@ export default class Compile extends React.Component<Props, State> {
             />
           </div>
 
-          <div>
-            <div>{'Tokens sent to token owner on init:'}</div>
+          <div className='row'>
+            <div className='description'>{'Tokens sent to token owner on init:'}</div>
             <input
               ref={ref => this.initialAmountEle = ref}
               type='number'
@@ -94,8 +97,8 @@ export default class Compile extends React.Component<Props, State> {
             />
           </div>
 
-          <div>
-            <div>{'Token exchange rate (tokens per ONT):'}</div>
+          <div className='row'>
+            <div className='description'>{'Token exchange rate (tokens per ONT):'}</div>
             <input
               ref={ref => this.tokensPerOntEle = ref}
               type='number'
@@ -108,12 +111,16 @@ export default class Compile extends React.Component<Props, State> {
             <div className='error' >{error}</div>
           ) : ''}
 
-          <button
-            onClick={() => this.handleSubmit()}
-          >
-            {'Submit'}
-          </button>
-
+          {isLoading ? (
+            <Loading />
+          ) : (
+            <div
+              className='submit-button'
+              onClick={() => this.handleSubmit()}
+            >
+              {'Submit'}
+            </div>
+          )}
         </div>
       </div>
     );
@@ -177,6 +184,7 @@ export default class Compile extends React.Component<Props, State> {
       return;
     }
 
+    this.setState({isLoading: true});
     dispatch(compile({
       tokenName: this.nameEle.value,
       symbol: this.symbolEle.value,

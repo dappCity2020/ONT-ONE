@@ -1,9 +1,9 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
 import { init, compile, deploy } from '../actions/dapi';
-import Compile from '../components/oep4crowdsale/Compile';
-import Deploy from '../components/oep4crowdsale/Deploy';
-import Receipt from '../components/oep4crowdsale/Receipt';
+import Compile from '../components/oep4/Compile';
+import Deploy from '../components/oep4/Deploy';
+import Receipt from '../components/oep4/Receipt';
 
 interface Props {
   dispatch: any;
@@ -32,13 +32,11 @@ class OEP4Token extends React.Component<Props, State> {
       ...initialState,
       networkIndex: props.networks.length || initialState.networkIndex,
     };
-
-    props.dispatch(init());
   }
 
   render() {
     return (
-      <div className='oep4-token'>
+      <div className='oep4-token content-card'>
         {this.renderContent()}
       </div>
     );

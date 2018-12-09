@@ -4,11 +4,15 @@ import {
   UPDATE_COMPILED_CONTRACT,
   UPDATE_PENDING_CONTRACT_DEPLOY,
   UPDATE_DEPLOYED_CONTRACT,
+  UPDATE_ACCOUNT,
+  DISCONNECT,
+  RESET,
 } from '../constants/actions';
 import o3dapi from 'o3-dapi-core';
 import o3dapiOnt from 'o3-dapi-ont';
 import $ from 'jquery';
 import { Crypto } from 'ontology-ts-sdk';
+import { replace } from 'react-router-redux';
 
 export function init() {
   return dispatch => {
@@ -22,6 +26,39 @@ export function init() {
         });
       });
     });
+  };
+}
+
+export function connect() {
+  return dispatch => {
+    o3dapi.ONT.getAccount()
+    .then(account => {
+      dispatch({
+        type: UPDATE_ACCOUNT,
+        data: account,
+      });
+    })
+    .catch(err => {})
+  }
+}
+
+export function disconnect() {
+  return dispatch => {
+    o3dapi.ONT.disconnect()
+    .then(res => {
+      dispatch({
+        type: DISCONNECT,
+      });
+      dispatch(replace('/'));
+    })
+    .catch(err => {})
+  }
+}
+
+export function reset() {
+  return dispatch => {
+    dispatch(replace('/'));
+    dispatch({type: RESET});
   };
 }
 

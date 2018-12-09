@@ -1,7 +1,9 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
-import { goBack } from 'react-router-redux';
+import { replace } from 'react-router-redux';
 import o3dapi from 'o3-dapi-core';
+import Loading from '../Loading';
+import { reset } from '../../actions/dapi';
 
 interface Props {
   dispatch: any;
@@ -42,7 +44,7 @@ export default class Receipt extends React.Component<Props, State> {
   }
 
   render() {
-    const { compileDetails, deployDetails } = this.props;
+    const { dispatch, compileDetails, deployDetails } = this.props;
     const { isDeployed } = this.state;
     const {
       tokenName,
@@ -77,20 +79,18 @@ export default class Receipt extends React.Component<Props, State> {
           </div>
 
           {isDeployed ? (
-            <button
-              onClick={() => this.handleSubmit()}
+            <div
+              className='submit-button'
+              onClick={() => dispatch(reset())}
             >
               {'Done'}
-            </button>
-          ) : 'Waiting for confirmation...'}
+            </div>
+          ) : (
+            <Loading/>
+          )}
 
         </div>
       </div>
     );
-  }
-
-  handleSubmit() {
-    const { dispatch } = this.props;
-    dispatch(goBack());
   }
 }

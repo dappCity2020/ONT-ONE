@@ -58,6 +58,26 @@ class App extends React.Component<any, any> {
             {'OEP4 w/ Crowdsale'}
           </button>
         </div>
+
+        <h1>{'Manage token'}</h1>
+        <div className='button-container'>
+          <button
+            onClick={() => dispatch(push('/mangecrowdsale'))}
+            className='last-button'
+          >
+            {'Manage'}
+          </button>
+        </div>
+
+        <h1>{'Buy tokens'}</h1>
+        <div className='button-container'>
+          <button
+            onClick={() => dispatch(push('/buytokens'))}
+            className='last-button'
+          >
+            {'Participate'}
+          </button>
+        </div>
       </div>
     );
   }

@@ -114,6 +114,10 @@ body {
   margin-bottom: 1rem;
   text-align: left;
 
+  &.center {
+    text-align: center;
+  }
+
   .description {
     margin-bottom: 0.5rem;
   }

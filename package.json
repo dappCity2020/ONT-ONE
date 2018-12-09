@@ -5,7 +5,7 @@
   "scripts": {
     "start": "webpack-dev-server",
     "build": "webpack & node server.js",
-    "dist": "webpack --env.DISTRIBUTION=true & node server.js"
+    "dist": "webpack --env.DISTRIBUTION=true"
   },
   "repository": {
     "type": "git",

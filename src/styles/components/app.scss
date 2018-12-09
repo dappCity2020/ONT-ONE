@@ -108,6 +108,13 @@ body {
   color: white;
   font-weight: 700;
   cursor: pointer;
+
+  &.back {
+    width: 3rem;
+    position: absolute;
+    top: -1.25rem;
+    left: 1rem;
+  }
 }
 
 .row {

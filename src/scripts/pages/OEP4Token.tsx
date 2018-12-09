@@ -4,6 +4,7 @@ import { init, compile, deploy } from '../actions/dapi';
 import Compile from '../components/oep4/Compile';
 import Deploy from '../components/oep4/Deploy';
 import Receipt from '../components/oep4/Receipt';
+import { reset } from '../actions/dapi';
 
 interface Props {
   dispatch: any;
@@ -35,8 +36,15 @@ class OEP4Token extends React.Component<Props, State> {
   }
 
   render() {
+    const { dispatch } = this.props;
     return (
       <div className='oep4-token content-card'>
+        <div
+          className='submit-button back'
+          onClick={() => dispatch(reset())}
+        >
+          {'back'}
+        </div>
         {this.renderContent()}
       </div>
     );
